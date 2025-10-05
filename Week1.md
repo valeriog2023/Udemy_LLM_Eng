@@ -5,7 +5,7 @@ Here you can also see that there are different models that you can run:
 - gemma3n, gemma3
 - qwen3, qwen2.5vl, ... (from alibaba cloud)
 - phu3.5 (from microsoft..)
-- llama3.1, ... 
+- llama3.1, ...
 - etc..
 
 But instead of isntalling it I want to run it inside a container:
@@ -15,7 +15,7 @@ Refer to https://hub.docker.com/r/ollama/ollama
 
 ```
 # run the container
-docker run -d -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama 
+docker run -d -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama
 
 # connect to the container
 docker exec -it ollama bash
@@ -106,7 +106,7 @@ This are the pormpts generated to ask OpenAI to look at the content of a website
   'content': 'You are looking at a website titled Home - Edward Donner\nThe contents of this website is as follows; please provide a short summary of this website in markdown. If it includes news or announcements, then summarize these too.\n\n<Text from the webserver>'}
   ]
 
-In this example the text for the webserver was retrieved using requests and BeautifulSoup 
+In this example the text for the webserver was retrieved using requests and BeautifulSoup
 ```
 
 With these messages I can query OpenAI
@@ -120,7 +120,7 @@ response = openai.chat.completions.create(
         messages = messages_for(website)
     )
 #
-# The response will be be in 
+# The response will be be in
 response.choices[0].message.content
 
 ```
@@ -172,7 +172,7 @@ def summarize(url):
 ```
 
 
-## Day 2 
+## Day 2
 
 There are 3 aspects to LLM Engineering:
   - Understand the differnt types of LLM and how to pick the right one
@@ -182,18 +182,18 @@ There are 3 aspects to LLM Engineering:
 
   - Tools of the trade
      - HuuggingFace
-     - Langchain 
+     - Langchain
      - Gradio
      - Modal
 
   - Techniques:
-     - APIs   
+     - APIs
      - RAG
      - Multi shot prompting
      - Agentization...
 
 
-## Models (Frontier)     
+## Models (Frontier)
 
 Depending on the context, frontier models either refers to the closed (ChatGPT, Claude) or the most advanced open source models.
 
@@ -235,7 +235,7 @@ There are different ways to use models:
 
 - Verify that ollama container is running and operational, visit: http://localhost:11434 <p>
   You should see: `Ollama is running`
-  
+
 - You might also have to download or specify ollama to use the correct model
   ```
   ollama list
@@ -243,25 +243,25 @@ There are different ways to use models:
   ollana run llama3.2 <-- Note tha you don't need to run it.. it's enough that it's available
   ```
 
-- We set some global values to use **requests**   
+- We set some global values to use **requests**
   ```
    OLLAMA_API = "http://localhost:11434/api/chat"
    HEADERS = {"Content-Type": "application/json"}
-   MODEL = "llama3.2"  
+   MODEL = "llama3.2"
   ```
 
 - for messages we use some intro stuff
   ```
   messages = [
-    {"role": "user", 
+    {"role": "user",
      "content": "Describe some of the business applications of Generative AI"}
-    ]  
+    ]
   response = requests.post(OLLAMA_API, json=payload, headers=HEADERS)
-  print(response.json()['message']['content'])  
- 
+  print(response.json()['message']['content'])
+
   ```
 
-**Note that we have also a python package that makes things easier**  
+**Note that we have also a python package that makes things easier**
 
 ```
 import ollama
@@ -365,4 +365,3 @@ does answer correctly (but maybe for chance) and can also answers apparently abo
 ## Day 4 - Transformer Architecture
 
 Transformer Architecture goes back to 2017 pape from google scientists: **"Attention is All You need"**
-
