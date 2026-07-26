@@ -23,12 +23,23 @@ docker exec -it ollama bash
 #
 run a language model:
 ollana run llama3
+
+or 
+
+ollama run gemma:270m  # small model from google
+
 ```
 
+You can see what models are available from the ollama website
 
 ## Day 1 - Setting up the ENV
 
 The course repo is available here: https://github.com/ed-donner/llm_engineering
+
+Clone it to the `original_repo` (that's excluded from git.. see .gitignore)
+```
+git clone https://github.com/ed-donner/llm_engineering original_repo
+```
 
 I've setup the env using anacona:
  - copied the environment.yml from git to: conda_env.yml
@@ -36,6 +47,8 @@ I've setup the env using anacona:
  - now you can activate it using: `conda activate llms` and deactivate with `conda deactiate`
  - launch jupiter lab: `jupyter lab`
 
+
+Apparently now the course uses **uv** as packet mangaer so now we also have the file **pyproject.toml**
 
 
 ### Setup API keys
@@ -283,7 +296,7 @@ response = ollama_via_openai.chat.completions.create(
 print(response.choices[0].message.content)
 ```
 
-### The Day 2 exercise is about rewriting the sumarize function using the local ollama Model
+### The Day 2 exercise is about rewriting the summarize function using the local ollama Model
 
 
 ## Day 3 - Overview of Models
