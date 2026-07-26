@@ -50,10 +50,19 @@ I've setup the env using anacona:
 
 Apparently now the course uses **uv** as packet mangaer so now we also have the file **pyproject.toml**
 
+After that just run `uv sync` in the main folder to create the new virtual environment; you can use it as normal with: `source .venv/bin/activate`
+
 
 ### Setup API keys
 
 Te webpage where you set up your **OpenAI key** is at https://platform.openai.com/api-keys - press the green 'Create new secret key' button and press 'Create secret key'. Keep a record of the API key somewhere private; you won't be able to retrieve it from the OpenAI screens in the future. It should start sk-proj-.
+
+Note that the webpae chane often.. billin is currently under settings -> organization settings -> billing <p>
+The good thing is that you pay upfront so you won't be over charged!
+
+Save your API key in your .env file (it will stay outside of git) 
+Note that the env file needs to be at the top of your directory
+
 
 In week 2 we will also set up keys for Anthropic and Google, which you can do here when we get there.
 
@@ -83,7 +92,7 @@ You need to have some credit but as little a few dollars should be enough
 
 - If you are not in the settings, go there: https://platform.openai.com/settings/organization/general
 
-     - Billing section, check your credit
+     - Settings -> Organization Settings -> Billing section, check your credit
      - Move to API Keys after and create a new secret API key.
        Create one anc copy it (you can't see it anymore)
      - create a `.env` file in your project (be sure not to push it to **git**) and put the following content
@@ -91,6 +100,12 @@ You need to have some credit but as little a few dollars should be enough
        OPENAI_API_KEY=<your key>
        ```
 
+
+Note that the guy uses cursor which is a spinoff of vscode; be sure you install the extensions:
+- python
+- jupyter
+
+and when you run a jupyter playbook you run it with the kernel created with **uv**
 
 ### First prompt interation
 
