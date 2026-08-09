@@ -57,8 +57,10 @@ After that just run `uv sync` in the main folder to create the new virtual envir
 
 Te webpage where you set up your **OpenAI key** is at https://platform.openai.com/api-keys - press the green 'Create new secret key' button and press 'Create secret key'. Keep a record of the API key somewhere private; you won't be able to retrieve it from the OpenAI screens in the future. It should start sk-proj-.
 
-Note that the webpae chane often.. billin is currently under settings -> organization settings -> billing <p>
-The good thing is that you pay upfront so you won't be over charged!
+Note that the webpage change often.. billing is currently under settings -> organization settings -> billing <p>
+The good thing is that you pay upfront so you won't be over charged! <p> 
+
+**However your credit will be lost if not used in 1 year!!**
 
 Save your API key in your .env file (it will stay outside of git) 
 Note that the env file needs to be at the top of your directory
@@ -106,6 +108,7 @@ Note that the guy uses cursor which is a spinoff of vscode; be sure you install 
 - jupyter
 
 and when you run a jupyter playbook you run it with the kernel created with **uv**
+You can test with `week1/day1.ipynb` 
 
 ### First prompt interation
 
@@ -228,36 +231,121 @@ Depending on the context, frontier models either refers to the closed (ChatGPT, 
 
 ### Closed source Frontier
 
-- GPT from OPenAi
-- Clause from Anthropic
-- Gemini from Google (google also has Gemma)
-- Command R from Cohere
-- Perplexity
+- GPT from OpenAi
+- Claude from Anthropic (biggest version is Opus and mid version is sonnet)
+- Gemini from Google (google also has Gemma which is open source)
+  some smaller versions are free
+- GROK from x.ai
 
 The first 2 are considered the most powerful and very similar, possibly with a slight edge for Clause in DS)
 
 ### Open source Frontier
 
-- LLama from Meta
+- LLama from Meta (a bit outdated maybe compared to GPT and Claude but open source!)
+   - llama3.2 comes with small versions and it's very convenient to run locally
 - Mixtral from Mistral
-- Qwen from Alibaba Cloud (very powerful)
-- Gemma from google
+   - uses a mix of smaller specliazed models to answer questions
+- Qwen from Alibaba Cloud (china) (very powerful)
+- Gemma from google (open source version of Gemini)
+   - has very small models
 - Phi from Microsoft
+- DeepSeek (not as powerful as GPT5) but it gives almost comparable results and it's built 
+  with a fraction of the training cost as the bigger models (i.e. the build is much more efficient)<p>
+  DeepSeekAI used the big Deepseek model to generate synthetic data to train smaller models (llama and gemma)<p>
+  The process is called `distillation` 
+- GPT OSS - GPT open source (comes in 2 sizes)  
+
 
 ### Ways to interact
 
 There are different ways to use models:
-  - chat interfaces (e.g. chat gpt, mostly free)
+  - chat interfaces (e.g. chat gpt, mostly free)<p>
+    here you don't use a model, you use a product which is based on a model; here it includes some customer experience improvement..
   - API (not free and pay for api calls)
        - Frameworks like LangChain that presents a single language to query multiple types of APIs
        - Managed AI Cloud Servers (Amazon/Google/Azure) <p>
          You write code locally that call API to LLMs in the cloud
   - Direct inference: code and weights of the model run locally<p>
-    E.g. HuggingFace TRansforms library with Ollama (local)
-    Ollama has basically a C++ compiled version of the model that can be run locally because it's more efficient, but because it's fully compiled you give up some control
+    E.g. **HuggingFace Transforms library** and **Ollama** (local)<p>
+    **Ollama** has basically a C++ compiled version of the model that can be run locally because it's more efficient, but because it's fully compiled you give up some control - you can use ollama to run specific models<p>
+    **Hugging Face Transformers Library** you take the python and C++ code that was used to write the model and you run the code yourself
 
 
-## Day2 Exercise
+## Day2
+
+We use Open AI API endpoints with a structure like this
+```
+import requests
+
+headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+
+payload = {
+    "model": "gpt-5-nano",
+    "messages": [
+        {"role": "user", "content": "Tell me a fun fact"}]
+}
+
+response = requests.post(
+    "https://api.openai.com/v1/chat/completions",
+    headers=headers,
+    json=payload
+)
+
+#
+# the response is structured as follows
+#
+Keys in the response message: dict_keys(['id', 'object', 'created', 'model', 'choices', 'usage', 'service_tier', 'system_fingerprint'])
+ --- id : chatcmpl-EAu685Z9y0RpQyJMFVp8keDWFONn0
+ --- object : chat.completion
+ --- created : 1786267628
+ --- model : gpt-5-nano-2025-08-07
+ --- choices: 1 
+       - keys: dict_keys(['index', 'message', 'finish_reason'])
+         - index : 0
+            - message:
+              - role : assistant
+              - content : Fun fact: Venus spins in the opposite direction of most planets—it's retrograde—so the Sun rises in the west and sets in the east. Want another fun fact, maybe about space, animals, or nature?
+              - refusal : None
+              - annotations : []
+         - finish_reason : stop
+ --- usage:
+      --- prompt_tokens : 11
+      --- completion_tokens : 821
+      --- total_tokens : 832
+      --- prompt_tokens_details : {'cached_tokens': 0, 'audio_tokens': 0}
+      --- completion_tokens_details : {'reasoning_tokens': 768, 'audio_tokens': 0, 'accepted_prediction_tokens': 0, 'rejected_prediction_tokens': 0}
+ --- service_tier : default
+ --- system_fingerprint : None
+```
+or we can use OpenAI Python package which in the end is just a wrapper around the REST APIs
+
+```
+#
+# Note we assume the API key is present in the env var: OPENAI_API_KEY
+#
+from openai import OpenAI
+openai = OpenAI()
+
+response = openai.chat.completions.create(model="gpt-5-nano", 
+                                          messages=[{"role": "user", "content": "Tell me a fun fact"}]
+                                       )
+#
+# the response is structured in the same way so you can do this: 
+#
+response.choices[0].message.content
+
+```
+
+**Note that this model was so popular that all AI providers have compatible endpoints that ork exactly the same!**
+
+Even the openai python package allows you to switch endpoint to a different provider using the:
+ -  `base_url=<different_endpoint>` 
+ -  `api_key=<different_key>`
+
+options in the functino call (you might also want to call the object accordingly to the endpoint you choose).
+
+
+## Day2 Exercise - connecting to ollama locally
 
 **This expects that we have locally ollama (we run it as a container)**
 
@@ -313,6 +401,50 @@ print(response.choices[0].message.content)
 
 ### The Day 2 exercise is about rewriting the summarize function using the local ollama Model
 
+```
+ollama list
+NAME             ID              SIZE      MODIFIED      
+gemma3:270m      e7d36fb2c3b3    291 MB    13 days ago      
+llama3:latest    365c0bd3c000    4.7 GB    10 months ago    
+root@61d52028bf34:/# ollama pull deepseek-r1:1.5b
+pulling manifest 
+pulling aabd4debf0c8: 100% ▕████████████████████████████████████████████████████████████████████████████▏ 1.1 GB                         
+pulling c5ad996bda6e: 100% ▕████████████████████████████████████████████████████████████████████████████▏  556 B                         
+pulling 6e4c38e1172f: 100% ▕████████████████████████████████████████████████████████████████████████████▏ 1.1 KB                         
+pulling f4d24e9138dd: 100% ▕████████████████████████████████████████████████████████████████████████████▏  148 B                         
+pulling a85fe2a2e58e: 100% ▕████████████████████████████████████████████████████████████████████████████▏  487 B                         
+verifying sha256 digest 
+writing manifest 
+success 
+
+
+```
+note that you don't need to tell ollama to change to the new model
+```
+ollama_base_api = "http://localhost:11434/v1"
+ollama = OpenAI(base_url=ollama_base_api, api_key='ollama')
+
+response = ollama.chat.completions.create(model="llama3:latest", 
+                                          messages=[{"role": "user", "content": "Tell me a fun fact"}]
+                                          )
+
+print(response.choices[0].message.content)
+
+Here's one:
+
+Did you know that there is a species of jellyfish that is immortal?! The Turritopsis dohrnii, also known as the "immortal jellyfish," is a type of jellyfish that can transform its body into a younger state through a process called transdifferentiation. This means that it can essentially revert back to its polyp stage, which is the juvenile form of a jellyfish, and then grow back into an adult again. This process can be repeated indefinitely, making the Turritopsis dohrnii theoretically "immortal"!
+
+Isn't that cool?
+```
+changing the model is easy
+```
+# now getting the an anser from deep seek
+response = ollama.chat.completions.create(model="deepseek-r1:1.5b", 
+                                          messages=[{"role": "user", "content": "Tell me a fun fact"}]
+                                          )
+
+print(response.choices[0].message.content)
+```
 
 ## Day 3 - Overview of Models
 
