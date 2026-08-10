@@ -448,7 +448,7 @@ print(response.choices[0].message.content)
 
 ## Day 3 - Overview of Models
 
-AI Models are good at
+AI LLM Models are good at
  - synthesizing information
  - flashing out a skeleton of a product solution
  - coding (especially debug and troubleshooting)
@@ -466,6 +466,12 @@ They are not as good in:
 
 We need to decide which model is better/suitable for a specific product.
 
+-------
+
+
+
+
+
 Asking the following questions:
 ```
 - How do I decide if a business problem is suitable for an LLM solution?
@@ -482,46 +488,28 @@ Note: this section is mostly fluff anbd chat.. nothing really too interesting..
 
 **Overall there is a conversion and the deciding factor will likely become price**
 
-### OpenAI
+**one more interesting thing he's showing is about the deep research option offered by some LLM chatbox..** 
 
-ChatGPT (latest model as of now is Strawberry)
-Normal GPT 4.0 answers wrong about the number of times 'a' appears but Strawberry answers right
+You basically set the specs of your research and when it starts the many agents behind the scenes go and research the topic and produce
+a result that it's proposed once completed (some time after.. eg.. 1hour)  it will also show the sources where the information is collected from.
+---
+**A final interesting use case is claude code**
 
-GPT can be used to generate pictures
+## Day 4 - Transformers, Agents, etc..
 
-**GPT Canvas** is used to collaboratively work on cod and it does look pretty good.<p>
-The code would be on the right panel and on the left you would have a chat.
-You can use the chat to request changes and improvements to the code on right..
-
-
-### Anthropic
-
-Claude. Leading in most benchmarks (especially Data Science)
-Still got the question about the number  of 'a' wrong
-
-Claude can create artifacts (seprate window) for code (similar to canvas but it will create new ones instead of refershing the existing canvas)
-
-
-### Google
-
-Gemini still gets the question about number of 'a' wrong
-
-### Cohere
-
-Uses Command R still gets the question about number of 'a' wrong
-
-
-### Meta
-
-Uses Llama and also does not answer correctly to the usual question
-Note: llama can generate pictires
-
-### Perplexity
-
-Uses Peplexity
-does answer correctly (but maybe for chance) and can also answers apparently about recent events
-
-
-## Day 4 - Transformer Architecture
+In 2017 Google scientists came up with a new way to organize neurons in neural networks.
 
 Transformer Architecture goes back to 2017 pape from google scientists: **"Attention is All You need"**
+
+The new architecture was especially good at look back at the sequence of changes in the nural network itself (self focusing) and identify
+which seps and inputs were contributing the most.
+
+The overall result was that this exstra layer (with self attention) allowed to work with much bigger data sets and scale more effectively.
+
+In 2018 OpenAI came up with a transformer architecture (using ththis architecture with their own transformer)
+
+Note that the use of transformer is for efficiency but it's not intrinsecly required.. other architectures may come along to do the same.
+
+
+So far.. quite a lot of other fluffy stuff..
+
