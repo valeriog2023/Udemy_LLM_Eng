@@ -197,3 +197,36 @@ Note that the system prompt will have to change based on the bot you talk to.
 
 GRADIO is a python library used to write front end UI in react. Here we are going to use it as a front end for API calls.<p>
 See the notebook to see how we use it to interact with Agent APIs
+
+
+
+# Tools
+
+Allows models to connect with external functions:
+ - richer reponses by extendind knowledge
+ - ability to carry out actions within the application (e.g. running python code, writing tests, etc..)
+ - enhanced capabilities like calculations
+
+How does an LLM call a function? it should just generate tokens (messages) ?<p>
+Tool Calling, in practice the flow is as follows:
+  - your code call the LLM with a prompt
+  - the LLM responds saying the best action is likely to call a tool (specific call/tool)
+  - your code will call the tool as insutrcuted by the LLM
+  - the code will get the output from the tool and send it back to the LLM
+    with a prompt like:
+    ```
+    I have a problem like bla,bla,bla..
+    you suggested to call this tool this way....
+    and we got back the following output: ....
+    Now please answer the question
+    ``` 
+
+Note that in the first system_message, included with the problem description we would add something like:
+```
+I can run tools on your behalf.. these are the tools and this is what they do:
+ - tool1: insutrctions, use, etc..
+ - tool2: instructions, use, etc..
+```
+
+You could use that in turn, will call other LLMs, so you can have an LLm that orchestrates the work of other agents.<p>
+This is referred to as **Agentic AI** 
