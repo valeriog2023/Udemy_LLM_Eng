@@ -230,3 +230,86 @@ I can run tools on your behalf.. these are the tools and this is what they do:
 
 You could use that in turn, will call other LLMs, so you can have an LLm that orchestrates the work of other agents.<p>
 This is referred to as **Agentic AI** 
+
+Tools must be described by a structured json blob, e.g. 
+
+- let's assume you have the following function:
+  ```
+  ticket_prices = {"london": "$799", "paris": "$899", "tokyo": "$1400", "berlin": "$499"}
+  def get_ticket_price(dst:str)->str:
+      print(f"Tool called for city {dst}")
+      price = ticket_prices.get(dst.lower(), "Unknown ticket price")
+      return f"The price of a ticket to {dst} is {price}"
+  ```
+- the json blob to describe the function would look something like this:
+  ```
+  price_function = {
+     "name": "get_ticket_price",
+     "description": "Get the price of a return ticket to the destination city.",
+     "parameters": {
+        "type": "object",
+        "properties": {
+            "dst": {
+                "type": "string",
+                "description": "The city that the customer wants to travel to",
+            },
+        },
+        "required": ["dst"],
+        "additionalProperties": False
+      }
+    }
+
+  ```  
+- you create a list of tools that you send to the LLM
+  ```
+  tools = [{"type": "function", "function": price_function}]
+  ```  
+- now we send the message with the list of tools. when we get the response back<p>
+  we need to identify if the LLM wants to use a tool or not    
+  ```
+    # history repeats all the messages so far
+    history = [{"role":h["role"], "content":h["content"]} for h in history]
+
+    # messages include the system message, the history and the new message
+    messages = [{"role": "system", "content": system_message}] + history + [{"role": "user", "content": message}]
+
+    # the actaul call include also the list of tools
+    response = openai.chat.completions.create(model=MODEL, reasoning_effort="none", messages=messages, tools=tools)
+  ``` 
+  Now part 2, detect if we need to use a tool
+  ```
+    # finish_reason == "tool_calls" is what matters here
+    # also note that we keep calling tools in case after the first message, 
+    # the LLM decides that need to call more tools
+    # you might want to stop the loop after a while.. (e.g. 100 calls?)
+    while response.choices[0].finish_reason=="tool_calls":
+        message = response.choices[0].message
+
+        # here we actually call the tool (TBD)
+        response = handle_tool_call(message)
+
+        # we append the message and the response of the tool
+        messages.append(message)
+        messages.append(response)
+
+        # we call again (no list of tools now)
+        response = openai.chat.completions.create(model=MODEL, reasoning_effort="none", messages=messages)
+    
+    # this will just return the response in either case
+    return response.choices[0].message.content
+  ```
+
+Of course you need to define the function  **handle_tool_call(message)** .<p>
+This function returns a list to **tool_call** with the following info:
+  - **id**: call_id to match tool_call and response 
+  - **function.name**: the function to call
+  - **function.arguments**: json content of the arguments, you can use : `arguments = json.loads(tool_call.function.arguments)` 
+
+Using that info you can call the function and then you need to return a response message in the format
+```
+    response = {
+         "role": "tool",                   # Note this new role
+         "content": <tool_response|text>,  # Tool response
+         "tool_call_id": tool_call.id      # tool_call.id
+        }
+```  
