@@ -313,3 +313,12 @@ Using that info you can call the function and then you need to return a response
          "tool_call_id": tool_call.id      # tool_call.id
         }
 ```  
+**Note** that, in the implementation in the jupyter notebook, rely on the gradio chat memory (on screen).
+So when the chat function is called, the history will miss all messages related to tool calls and responses.. because
+these messages never reach the chat so they never become part of the official chat history.
+While that might be ok in most cases.. for a better solution you not rely on gradio chat history but on a external history (DB?File?)
+that would include also the tool related messages. 
+
+**Note** also that when tools are involved, we don't return the output as a stream.. apparently it gets a bit messy
+
+**Note** openai agent SDK allows you to avoid having to write the full json and stuff.. and it will also support streaming
