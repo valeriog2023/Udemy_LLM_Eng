@@ -198,6 +198,21 @@ Note that the system prompt will have to change based on the bot you talk to.
 GRADIO is a python library used to write front end UI in react. Here we are going to use it as a front end for API calls.<p>
 See the notebook to see how we use it to interact with Agent APIs
 
+Gradio does 2 things:
+ - we map a python function to a frontend created in javascript; you can have different front end types, e.g.:
+    - chat
+    - buttons
+    - text boxes
+    - dropw down menu, etc..
+ - when you call `.lauch()` it starts a web server that servers the front end you generted; This can be shown inside a notebook.
+ 
+ Gradio can also run in pure api mode where it does not create the User frontend but an API frontent (and of course you can manage authentication etc..) 
+
+We have 3 types of Gradio interfaces:
+- `gr.Interface`: standard simple UI with an input form and a button and few other toggles..
+- `gr.ChatInterface`: chatnot style with message and history
+- `gr.Blocks`: Custom UI (in case you want more complex stuff.. more callbacks function etc..)
+
 
 
 # Tools
@@ -322,3 +337,48 @@ that would include also the tool related messages.
 **Note** also that when tools are involved, we don't return the output as a stream.. apparently it gets a bit messy
 
 **Note** openai agent SDK allows you to avoid having to write the full json and stuff.. and it will also support streaming
+
+
+# Agents
+
+Some definitions of Agentic AI:
+  - Where you have a system where the LLM determines the workflow we talk about **Agents** but remember that LLm just generates tokens..<p>
+   so that actually mean generate tokens that control the workflow.
+  - An LLM Agent runs tools in a loop to achieve a goal (it doesn't even need to be tools..)
+
+
+Now we use the example before to generate an image with an **OpenAI** model and a **prompt**
+```
+import base64
+from io import BytesIO
+from PIL import Image
+
+def artist(city):
+    image_response = openai.images.generate(
+            model="gpt-image-1-mini",
+            prompt=f"An image representing a vacation in {city}, showing tourist spots and everything unique about {city}, in a vibrant pop-art style",
+            size="1024x1024",
+            n=1,
+        )
+    image_base64 = image_response.data[0].b64_json
+    image_data = base64.b64decode(image_base64)
+    return Image.open(BytesIO(image_data))
+
+#
+# in jupyter you can display it directly
+image = artist("New York City")
+display(image)     
+
+```
+
+Here instead we get some code for text to speach:
+```
+def talker(message):
+    response = openai.audio.speech.create(
+      model="gpt-4o-mini-tts",
+      voice="onyx",    # Also, try replacing onyx with alloy or coral
+      input=message
+    )
+    return response.content
+```
+Browser and apps can play this message and the same goes for Gradio app (see notebook)
