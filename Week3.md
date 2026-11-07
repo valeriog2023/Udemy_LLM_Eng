@@ -1,384 +1,343 @@
-# Week2 - frontier Models with APIs, UIs and multi-modality
+# Week3 - OPEN SOURCE MODELS 
 
-The idea would be to use multi models and in particular:
+## HUGGING FACE
 
-- For OpenAI, visit https://openai.com/api/  
-- For Anthropic, visit https://console.anthropic.com/  
-- For Google, visit https://ai.google.dev/gemini-api   
-- For DeepSeek, visit https://platform.deepseek.com/  
-- For Groq, visit https://console.groq.com/  
-- For Grok, visit https://console.x.ai/  
+There are 2 parts to higging face:
+- **hub/platform**: This is the web site and mainly it is used because it has:
+   - Source models (milions and more).. it's like a repo for DS models. 
+   - Data sets. It has taken the place of kaggle for datasets (you can find a lot of finance datasets)
+   - Spaces: hosted apps, like gradio apps (use deploy option) that you can share and use.  
+     This is anything that can run in a container
 
-You can manage these directly via those links (and btw you'll need to update the `.env` file)
+**You need an account on Hugging Face (free)**
+
+- **libraries**: code/open source libraries that everyone uses it. They implement foo instance **transformers** (mostly in pytorch)
+  and you can download them, tweak the weights and run the models yourself
+
+  Note that this is different from ollama because ollama is an actual product, packaged and made efficient (also pre-baked)
+  Here you can have access to the actual code, so you can change it and fine tuning..<p>
+  In particular we use 6 libraries here:
+   - **hub**: let you connect to the platform (hub above) to get models and datsets
+   - **datasets**: this let you manipulate datasets in an efficient way
+   - **transformers**: it's the library that let you work with models, change them, run them, etc..
+   - **peft**: performance efficient parameter tuning library
+   - **trl**: transformer reinforcement library
+   - **accelerate**: distribute a library across multiple GPUs
+
+
+## GOOGLE COLAB
+
+Link to the Course Colab Page: <p>
+https://colab.research.google.com/drive/1DjcrYDZldAXKJ08x1uYIVCtItoLPk1Wr?usp=sharing
+
+
+Link to empty/new Colab Notebook:<p>
+https://colab.research.google.com
+
+
+Google Colab
+ - allows you to run a notebook in your browser window on a Google owned computer out there in the cloud.
+ - allows you to easily collaborate and share the notebook with other people.
+ - ingtegrate wioth other google services (like gooogle drive) which is very convenient
+ - **It gives you access to high end GPUs** In particular, you can choose runtime which are the environments you use for your notebook:
+    - CPU based
+    - GPU based; The lower spec/cost is T4(15GB GPU RAM) and should be free but you can pay to get higher level GPUs
+
+## Basic usage    
+Link to notebook test: [LLM_week3_day1](https://colab.research.google.com/drive/1cIeoaUlVBgo_QQCS_Z2sni7ceHa2JwYP); it's not shared.
+
+Basic: 
+ - **connect**: (button on the top right) select the running environment and change runtime env.
+   Here you can select the **T4 GPU** and in the drop down menu (once connected) you can:
+     - see the resources used (menu: view resource)
+     - disconnect and delete run time (also available from the run time menu)
+ - **share**: (button on the top right) select to share
+ - **runtime menu**: use for restart sessions etc.. (if you disconect, you'll have to reinstall packages)<p>
+   and because it's in cloud, you'll have to build your environment every time.
+
+Note that sometime, google will change your running environment and move you to CPU or other types that might not work for you. Keep that in mind.
+
+Also remember to save before leaving Colab or you will loose your work.
+
+
+## Check the GPU
 
 ```
-OPENAI_API_KEY=xxxx
-ANTHROPIC_API_KEY=xxxx
-GOOGLE_API_KEY=xxxx
-DEEPSEEK_API_KEY=xxxx
-GROQ_API_KEY=xxxx
-GROK_API_KEY=xxxx 
-OPENROUTER_API_KEY=xxxx
-```
+# Let's check the GPU - it should be a Tesla T4
 
-You can also use OpenRouter as your one-stop-shop for many of these! OpenRouter is "the unified interface for LLMs":
+# this is actually calling the command nvidia-smi and getting the output
+gpu_info = !nvidia-smi
 
-For OpenRouter, visit https://openrouter.ai/  
-
-you can use a single account (with a single billing) to get a single front end for all and the nice thing is that you can use **openai library** as a frontend for all of them
-
-```
-load_dotenv(override=True)
-openai_api_key = os.getenv('OPENAI_API_KEY')
-anthropic_api_key = os.getenv('ANTHROPIC_API_KEY')
-google_api_key = os.getenv('GOOGLE_API_KEY')
-deepseek_api_key = os.getenv('DEEPSEEK_API_KEY')
-groq_api_key = os.getenv('GROQ_API_KEY')
-grok_api_key = os.getenv('GROK_API_KEY')
-openrouter_api_key = os.getenv('OPENROUTER_API_KEY')
-
-anthropic_url = "https://api.anthropic.com/v1/"
-gemini_url = "https://generativelanguage.googleapis.com/v1beta/openai/"
-deepseek_url = "https://api.deepseek.com"
-groq_url = "https://api.groq.com/openai/v1"
-grok_url = "https://api.x.ai/v1"
-openrouter_url = "https://openrouter.ai/api/v1"
-ollama_url = "http://localhost:11434/v1"
-
-anthropic = OpenAI(api_key=anthropic_api_key, base_url=anthropic_url)
-gemini = OpenAI(api_key=google_api_key, base_url=gemini_url)
-deepseek = OpenAI(api_key=deepseek_api_key, base_url=deepseek_url)
-groq = OpenAI(api_key=groq_api_key, base_url=groq_url)
-grok = OpenAI(api_key=grok_api_key, base_url=grok_url)
-openrouter = OpenAI(base_url=openrouter_url, api_key=openrouter_api_key)
-ollama = OpenAI(api_key="ollama", base_url=ollama_url)
-```
+# basic checks here
+gpu_info = '\n'.join(gpu_info)
+if gpu_info.find('failed') >= 0:
+  print('Not connected to a GPU')
+else:
+  print(gpu_info)
+  if gpu_info.find('Tesla T4') >= 0:
+    print("Success - Connected to a T4")
+  else:
+    print("NOT CONNECTED TO A T4")
 
 
+### expected result when connected on colab/T4
+-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 580.82.07              Driver Version: 580.82.07      CUDA Version: 13.0     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  Tesla T4                       Off |   00000000:00:04.0 Off |                    0 |
+| N/A   42C    P8              9W /   70W |       0MiB /  15360MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
 
-
-## Training vs Inference scaling
-
-With the latest GPT type you can pass as parameter: `reasoning_effort` which is a string that can differnt values e.g. none,low,etc..
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+Success - Connected to a T4
 
 ```
-easy_puzzle = [
-    {"role": "user", "content": 
-        "You toss 2 coins. One of them is heads. What's the probability the other is tails? Answer with the probability only."},
-]
 
-response = openai.chat.completions.create(model="gpt-6-luna", messages=easy_puzzle, reasoning_effort="none")
-response = openai.chat.completions.create(model="gpt-6-luna", messages=easy_puzzle, reasoning_effort="low")
-response = openai.chat.completions.create(model="gpt-6-luna", messages=easy_puzzle, reasoning_effort="minimal")
-display(Markdown(response.choices[0].message.content))
+
+## Connect to Colab account
+
+From you hugging face account:
+ - go to your avatar -> profile -> API Access Tokens
+ - select Write ( we need write acces)
+ - give the token a name: (**UDEMY_LLM_GOOGLE_COLAB_TOKEN**) and click on create
+
+Now move to Colab:
+ - select the key icon on the left (secrets)
+ - Add a new secret: 
+    - Name: HT_TOKEN
+    - Value: hf_<...>
+    - select the enable flag on the left
+
+  Secrets will not be shared if you share a colab notebook.
+
+
+In the Colab notebook you would have something like this:
 ```
-the idea is that small models can compensate the (low) training effort with a high inference training 
+#
+#  CONNECTING TO HUGGING FACE
+#  This uses the hugging face hub library
+#  If the cell runs, it's all good
+#
+from huggingface_hub import login
+from google.colab import userdata
 
-## Router and abstraction layes
 
-With a **router**: you connect to a component between you and the API provider that forwards you API call to a different provider based on some info
-
-An **abstraction layer** is when you have some code running locally that decides how to forward your calls
-
-### Open router
-
-Of course you need an Openrouter api key, then your model will include the `model provider / model`
-```
-# Here z-ai is a chinese startup company that provides the glm-4.5 model
-response = openrouter.chat.completions.create(model="z-ai/glm-4.5", messages=tell_a_joke)
-display(Markdown(response.choices[0].message.content))
-```
-
-## Abstraction Layer
-
-LangChain is an abstraction layer that you can use to call different LLMs.<p>
-You just call the `invoke` call
-```
-from langchain_openai import ChatOpenAI
-
-llm = ChatOpenAI(model="gpt-6-luna", reasoning_effort="none")
-response = llm.invoke(tell_a_joke)
-
-display(Markdown(response.content))
+hf_token = userdata.get('HF_TOKEN')
+login(hf_token, add_to_git_credential=True)
 ```
 
-Almost the opposite (as it is light) is **litetLLM** which gives a similar structure to the API seen so far:
+Then you can call a Diffusion pipeline (what is it exactly?) from hugging face for instance to generate a picture
 ```
-from litellm import completion
-response = completion(model="openai/gpt-4.1", messages=tell_a_joke)
-reply = response.choices[0].message.content
-display(Markdown(reply))
-```
-It let's you easily connect to the external providers like AWS, Azure etc.. and also has nice API to tell you how much
-your calls costed, how many tokens you used etc..
-```
-print(f"Input tokens: {response.usage.prompt_tokens}")
-print(f"Output tokens: {response.usage.completion_tokens}")
-print(f"Total tokens: {response.usage.total_tokens}")
-print(f"Total cost: {response._hidden_params["response_cost"]*100:.4f} cents")
+from IPython.display import display
+from diffusers import DiffusionPipeline
+import torch
 
-# Gives
+pipe = DiffusionPipeline.from_pretrained("stabilityai/stable-diffusion-xl-base-1.0", torch_dtype=torch.float16, use_safetensors=True, variant="fp16")
+pipe.to("cuda")
 
-Input tokens: 24
-Output tokens: 22
-Total tokens: 46
-Total cost: 0.0224 cents
+prompt = "A class of data scientists learning AI engineering in a vibrant high-energy pop-art style"
+
+image = pipe(prompt=prompt, num_inference_steps=30).images[0]
+
+display(image)
+``` 
+
+You can also update/upgrade Hugging Face libraries
+```
+!uv pip install --upgrade datasets==3.6.0
 ```
 
-## Prompt Caching
-With LiteLLM completion object we first ask Gemini to reply to the question: 
-
-`question = [{"role": "user", "content": "In Hamlet, when Laertes asks 'Where is my father?' what is the reply?"}]`
-
-which costs 0.0108 cents (88 tokens).
-The question is given with no context so the model might give you the righ answer or the wrong one..
-You could give the full hamlet as context and you would see that the cost gets higher, however if you re-run the same question shortly after<p>
-again with the full Hamlet as context, LiteLLM will identify that most of the tokens were already sent and it will use prompt caching
-to reduce the total costs..
-unfortunately it does not seem to work too well in the example:
+and generate audio (before it was a picture)
 ```
-[first call]
-Input tokens: 53208
-Output tokens: 32
-Cached tokens: 49124
-Total cost: 0.2297 cents
+from transformers import pipeline
+from datasets import load_dataset
+import soundfile as sf
+import torch
+from IPython.display import Audio
 
-[second call]
-Input tokens: 53208
-Output tokens: 73
-Cached tokens: 49124  <---- we have the cached token
-Total cost: 0.2359 cents  <-- but the cost is even higher??
+synthesiser = pipeline("text-to-speech", "microsoft/speecht5_tts", device='cuda')
+embeddings_dataset = load_dataset("matthijs/cmu-arctic-xvectors", split="validation", trust_remote_code=True)
+speaker_embedding = torch.tensor(embeddings_dataset[7306]["xvector"]).unsqueeze(0)
+speech = synthesiser("Hi to an artificial intelligence engineer, on the way to mastery!", forward_params={"speaker_embeddings": speaker_embedding})
+
+Audio(speech["audio"], rate=speech["sampling_rate"])
 ```
-I guess different providers have different policies for Cache Tokens...
 
-- Anthropic: you need to explicitely tell that you want to use caching and there's some tradeoff in the costs
-- OpenAI: the caching must start at the beginning of the prompt.. so if you have a changeable part of the prompt put it at the end.
-- Gemini : supports implicit and explicite prompt caching.
 
-# Chatbot chatting with each other
+# HUGGING FACE LIBRARIES
 
-Let's assume we want 2 chatbots to interact with eacth other:
-- assign a "system" content to each of the two, e.g.
-   - gpt_system: { 'role','system', 'content': '<personality1>}
-   - claude_system: { 'role','system', 'content': '<personality2>}
-- assign one of the 2 chatbot the `user` role and the `assitant` role to the other chatbot.<p>
-  The roles are flipped over when when you call one bot or the other e.g: 
-    - gpt is the assistant and claude is the user when you call gpt   
-    - gpt is the user and claude is the assistant when you call claude
-  At every call you collect the response and add it to the list of messages returned by the bot<p>
-  when you build the `messages` list you give to the chatbot you rebuild the full conversation<p>
-  Again be carefull to include all messages and identify as assitant the bot you ae going to talk to and as user the other one
+## HIGH LEVEL CODE: PIPELINES
+Simpler interface to the lower level code: higher level APIs to carry out standard tasks quickly
+e.g. the model has already been train and you just want to run it in common inference use cases:
+ - sentiment analysis
+ - classifier
+ - named entity recognition tasks
+ - question answering
+ - summarizing
+ - translation
 
-Note that the system message for the 2 bots never changes for that bot, during the conversation.
-
-If you need to create a conversation with 3 or more entities, you can't really use the `assistant` vs `user` model. 
-
-You can use just a single user prompt that recaps the coversation with the different parites and ask to respons a specific party.
-The prompt would look something like:
-
- 
- ```
-system_prompt = """
-You are Alex, a chatbot who is very argumentative; you disagree with anything in the conversation and you challenge everything, in a snarky way.
-You are in a conversation with Blake and Charlie.
-"""
-
-user_prompt = f"""
-You are Alex, in conversation with Blake and Charlie.
-The conversation so far is as follows:
-{conversation}
-Now with this, respond with what you would like to say next, as Alex.
-"""
+It is very easy to create a pipeline.. the basic structure is:
 ```
-Note that the system prompt will have to change based on the bot you talk to.   
----------------------------
+my_pipeline = pipeline("the_task_I_want_to_do")
 
-# GRADIO - UI for non-frontend people
+Followed by
 
-GRADIO is a python library used to write front end UI in react. Here we are going to use it as a front end for API calls.<p>
-See the notebook to see how we use it to interact with Agent APIs
+result = my_pipeline(my_input)
+```
 
-Gradio does 2 things:
- - we map a python function to a frontend created in javascript; you can have different front end types, e.g.:
-    - chat
-    - buttons
-    - text boxes
-    - dropw down menu, etc..
- - when you call `.lauch()` it starts a web server that servers the front end you generted; This can be shown inside a notebook.
- 
- Gradio can also run in pure api mode where it does not create the User frontend but an API frontent (and of course you can manage authentication etc..) 
-
-We have 3 types of Gradio interfaces:
-- `gr.Interface`: standard simple UI with an input form and a button and few other toggles..
-- `gr.ChatInterface`: chatnot style with message and history
-- `gr.Blocks`: Custom UI (in case you want more complex stuff.. more callbacks function etc..)
-
-
-
-# Tools
-
-Allows models to connect with external functions:
- - richer reponses by extendind knowledge
- - ability to carry out actions within the application (e.g. running python code, writing tests, etc..)
- - enhanced capabilities like calculations
-
-How does an LLM call a function? it should just generate tokens (messages) ?<p>
-Tool Calling, in practice the flow is as follows:
-  - your code call the LLM with a prompt
-  - the LLM responds saying the best action is likely to call a tool (specific call/tool)
-  - your code will call the tool as insutrcuted by the LLM
-  - the code will get the output from the tool and send it back to the LLM
-    with a prompt like:
+Note that:
+  - pipeline tasks are **inference** tasks, i.e. the model has already been trained and now you use it.
+    **training** tasks are not done with pipelines.
+  - you might want to cehck that you are running on a GPU, you can get the gpu (nvidia) info as follows
     ```
-    I have a problem like bla,bla,bla..
-    you suggested to call this tool this way....
-    and we got back the following output: ....
-    Now please answer the question
+    gpu_info = !nvidia-smi
+    gpu_info 
+    ``` 
+  - import and how to connect.. note that you need the env var **HF_TOKEN** set (with a write token)
+    ```
+    import torch
+    from google.colab import userdata
+    from huggingface_hub import login
+    from transformers import pipeline
+    from diffusers import DiffusionPipeline  # ysed for pictures
+    from datasets import load_dataset
+    import soundfile as sf
+    from IPython.display import Audio
+    
+    my_pipeline = pipeline(task,      # required.. what you want the pipeline to do (string/enum)
+                           model=xx,  # optional, you can specify a model but it's not required
+                                      #    it will default to one model and tell you
+                           device=xx  # optional, you can specify if you want to use GPU 
+                                      #    for nvidia, it's 'cuda'
+                                      #    for apple/mac silicon (if you test locally), it's 'mps'
+                           )
+    #
+    # then you ask to infer something  (e.g. below)                     
     ``` 
 
-Note that in the first system_message, included with the problem description we would add something like:
-```
-I can run tools on your behalf.. these are the tools and this is what they do:
- - tool1: insutrctions, use, etc..
- - tool2: instructions, use, etc..
-```
 
-You could use that in turn, will call other LLMs, so you can have an LLm that orchestrates the work of other agents.<p>
-This is referred to as **Agentic AI** 
+### PIPELINES EXAMPLES
 
-Tools must be described by a structured json blob, e.g. 
+#### Sentiment Analysis (task: sentiment-analysis )
 
-- let's assume you have the following function:
-  ```
-  ticket_prices = {"london": "$799", "paris": "$899", "tokyo": "$1400", "berlin": "$499"}
-  def get_ticket_price(dst:str)->str:
-      print(f"Tool called for city {dst}")
-      price = ticket_prices.get(dst.lower(), "Unknown ticket price")
-      return f"The price of a ticket to {dst} is {price}"
-  ```
-- the json blob to describe the function would look something like this:
-  ```
-  price_function = {
-     "name": "get_ticket_price",
-     "description": "Get the price of a return ticket to the destination city.",
-     "parameters": {
-        "type": "object",
-        "properties": {
-            "dst": {
-                "type": "string",
-                "description": "The city that the customer wants to travel to",
-            },
-        },
-        "required": ["dst"],
-        "additionalProperties": False
-      }
-    }
-
-  ```  
-- you create a list of tools that you send to the LLM
-  ```
-  tools = [{"type": "function", "function": price_function}]
-  ```  
-- now we send the message with the list of tools. when we get the response back<p>
-  we need to identify if the LLM wants to use a tool or not    
-  ```
-    # history repeats all the messages so far
-    history = [{"role":h["role"], "content":h["content"]} for h in history]
-
-    # messages include the system message, the history and the new message
-    messages = [{"role": "system", "content": system_message}] + history + [{"role": "user", "content": message}]
-
-    # the actaul call include also the list of tools
-    response = openai.chat.completions.create(model=MODEL, reasoning_effort="none", messages=messages, tools=tools)
-  ``` 
-  Now part 2, detect if we need to use a tool
-  ```
-    # finish_reason == "tool_calls" is what matters here
-    # also note that we keep calling tools in case after the first message, 
-    # the LLM decides that need to call more tools
-    # you might want to stop the loop after a while.. (e.g. 100 calls?)
-    while response.choices[0].finish_reason=="tool_calls":
-        message = response.choices[0].message
-
-        # here we actually call the tool (TBD)
-        response = handle_tool_call(message)
-
-        # we append the message and the response of the tool
-        messages.append(message)
-        messages.append(response)
-
-        # we call again (no list of tools now)
-        response = openai.chat.completions.create(model=MODEL, reasoning_effort="none", messages=messages)
-    
-    # this will just return the response in either case
-    return response.choices[0].message.content
-  ```
-
-Of course you need to define the function  **handle_tool_call(message)** .<p>
-This function returns a list to **tool_call** with the following info:
-  - **id**: call_id to match tool_call and response 
-  - **function.name**: the function to call
-  - **function.arguments**: json content of the arguments, you can use : `arguments = json.loads(tool_call.function.arguments)` 
-
-Using that info you can call the function and then you need to return a response message in the format
-```
-    response = {
-         "role": "tool",                   # Note this new role
-         "content": <tool_response|text>,  # Tool response
-         "tool_call_id": tool_call.id      # tool_call.id
-        }
-```  
-**Note** that, in the implementation in the jupyter notebook, rely on the gradio chat memory (on screen).
-So when the chat function is called, the history will miss all messages related to tool calls and responses.. because
-these messages never reach the chat so they never become part of the official chat history.
-While that might be ok in most cases.. for a better solution you not rely on gradio chat history but on a external history (DB?File?)
-that would include also the tool related messages. 
-
-**Note** also that when tools are involved, we don't return the output as a stream.. apparently it gets a bit messy
-
-**Note** openai agent SDK allows you to avoid having to write the full json and stuff.. and it will also support streaming
-
-
-# Agents
-
-Some definitions of Agentic AI:
-  - Where you have a system where the LLM determines the workflow we talk about **Agents** but remember that LLm just generates tokens..<p>
-   so that actually mean generate tokens that control the workflow.
-  - An LLM Agent runs tools in a loop to achieve a goal (it doesn't even need to be tools..)
-
-
-Now we use the example before to generate an image with an **OpenAI** model and a **prompt**
-```
-import base64
-from io import BytesIO
-from PIL import Image
-
-def artist(city):
-    image_response = openai.images.generate(
-            model="gpt-image-1-mini",
-            prompt=f"An image representing a vacation in {city}, showing tourist spots and everything unique about {city}, in a vibrant pop-art style",
-            size="1024x1024",
-            n=1,
-        )
-    image_base64 = image_response.data[0].b64_json
-    image_data = base64.b64decode(image_base64)
-    return Image.open(BytesIO(image_data))
-
-#
-# in jupyter you can display it directly
-image = artist("New York City")
-display(image)     
+Below some exapmles for sentiment analysis..<p>
+The lesson that we learn is that the model we pick makes a difference.. we should check what model hugging face makes available for a specific task and select the correct one.
 
 ```
+my_simple_sentiment_analyzer = pipeline("sentiment-analysis", device="cuda")
+result = my_simple_sentiment_analyzer("I'm super excited to be on the way to LLM mastery!")
+print(result)
 
-Here instead we get some code for text to speach:
+
+print("--------")
+# this is not a very positive example
+result = my_simple_sentiment_analyzer("I should be more excited to be on the way to LLM mastery!")
+print(result)
 ```
-def talker(message):
-    response = openai.audio.speech.create(
-      model="gpt-4o-mini-tts",
-      voice="onyx",    # Also, try replacing onyx with alloy or coral
-      input=message
-    )
-    return response.content
+Result would be something like this:
 ```
-Browser and apps can play this message and the same goes for Gradio app (see notebook)
+No model was supplied, defaulted to distilbert/distilbert-base-uncased-finetuned-sst-2-english and revision 714eb0f (https://huggingface.co/distilbert/distilbert-base-uncased-finetuned-sst-2-english).
+Using a pipeline without specifying a model name and revision in production is not recommended.
+config.json: 100%
+ 629/629 [00:00<00:00, 20.5kB/s]
+model.safetensors: 100%
+ 268M/268M [00:08<00:00, 29.1MB/s]
+tokenizer_config.json: 100%
+ 48.0/48.0 [00:00<00:00, 2.85kB/s]
+vocab.txt: 
+ 232k/? [00:00<00:00, 10.1MB/s]
+Device set to use cuda
+[{'label': 'POSITIVE', 'score': 0.9993460774421692}]
+-------------
+[{'label': 'POSITIVE', 'score': 0.9008274674415588}]  # <- note that this is misclassified.. it's not that positive
+```
+
+We can now test with a model that is not default but specialized for sentiment analysis
+
+```
+better_sentiment = pipeline("sentiment-analysis", 
+                 model="nlptown/bert-base-multilingual-uncased-sentiment",  # model dedicated to sentiment analysis
+                 device="cuda")
+result = better_sentiment("I should be more excited to be on the way to LLM mastery!!")
+print(result)
+```
+
+Result is
+```
+# Result is in starts (here we get 3 out of 5 so it definitely gets something)
+[{'label': '3 stars', 'score': 0.3901219367980957}]
+```
+
+#### Named Entity Recognition (task: ner)
+
+It is used to categorize items in a text.. (e.g. person names, entities, etc..). it works token by token
+and returns something like the following
+```
+ner = pipeline("ner", device="cuda")
+result = ner("AI Engineers are learning about the amazing pipelines from HuggingFace in Google Colab from Ed Donner")
+for entity in result:
+  print(entity)
+
+...
+Device set to use cuda
+{'entity': 'I-ORG', 'score': np.float32(0.999476), 'index': 1, 'word': 'AI', 'start': 0, 'end': 2}
+{'entity': 'I-ORG', 'score': np.float32(0.9962089), 'index': 2, 'word': 'Engineers', 'start': 3, 'end': 12}
+{'entity': 'I-ORG', 'score': np.float32(0.8205678), 'index': 11, 'word': 'Hu', 'start': 59, 'end': 61}
+{'entity': 'I-ORG', 'score': np.float32(0.651493), 'index': 12, 'word': '##gging', 'start': 61, 'end': 66}
+{'entity': 'I-ORG', 'score': np.float32(0.960993), 'index': 13, 'word': '##F', 'start': 66, 'end': 67}
+{'entity': 'I-ORG', 'score': np.float32(0.92517126), 'index': 14, 'word': '##ace', 'start': 67, 'end': 70}
+{'entity': 'I-MISC', 'score': np.float32(0.8882749), 'index': 16, 'word': 'Google', 'start': 74, 'end': 80}
+{'entity': 'I-MISC', 'score': np.float32(0.67307675), 'index': 17, 'word': 'Cola', 'start': 81, 'end': 85}
+{'entity': 'I-PER', 'score': np.float32(0.9989441), 'index': 20, 'word': 'Ed', 'start': 92, 'end': 94}
+{'entity': 'I-PER', 'score': np.float32(0.99872154), 'index': 21, 'word': 'Don', 'start': 95, 'end': 98}
+{'entity': 'I-PER', 'score': np.float32(0.96185666), 'index': 22, 'word': '##ner', 'start': 98, 'end': 101}  
+```
+
+
+#### Other tasks:
+Just specify one of the other tasks in the pipeline, an appropriate model and device=`cuda` (if you use a GPU)
+
+ - **question-answering**<p>: This requires as param when called to inproduce an inference: 
+     - question
+     - context: The context (you could generate context from the result of another pipelibe)
+ - **summarization**:  this takes as parameter:
+     - text
+     - max_length, min_length 
+     - do_sample
+   Results are in `result[0]['summary_text']`  
+ - **translation_<from>_to_<to>**, e.g. **translation_en_to_it**
+   Results are in `result[0]['translation_text']`
+ - **text_generation**
+   Results are in `result[0]['generated_text']`
+ - **zero-shot-classification**: puts a sentence in a bucket with no previous examples. 
+   Takes as input:
+   - text: <just text>
+   - candidate_labels: list of possible labels we want to use to possibly classify the test
+   It returns the probability of the text being any of the possible labels given
+ - **image/audio generation**  
+
+There are actually many other pipelines, so have a look at the higging face docs:
+
+https://huggingface.co/docs/transformers/main_classes/pipelines
+
+There's also this list of Tasks for Diffusion models instead of Transformers, following the image generation example where I use DiffusionPipeline above.
+https://huggingface.co/docs/diffusers/en/api/pipelines/overview
+
+
+
+## LOWER LEVEL CODE: TOKENIZERS AND MODELS
+They provide more power and control
+
+ - [Day1 (personal) colab notebook](https://colab.research.google.com/drive/1cIeoaUlVBgo_QQCS_Z2sni7ceHa2JwYP#scrollTo=5iiiD5GFvwXA)
+ - [Day2 (personal) colab notebook][https://colab.research.google.com/drive/1m23CbF5wVXMhL4W6eiMlmmbXAhAw2Mck#scrollTo=jhLouIeW5kXw]
