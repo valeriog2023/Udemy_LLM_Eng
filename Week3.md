@@ -336,8 +336,146 @@ https://huggingface.co/docs/diffusers/en/api/pipelines/overview
 
 
 
+
+
 ## LOWER LEVEL CODE: TOKENIZERS AND MODELS
 They provide more power and control
 
+A `token` is a part of word and the `token id` is the index of the token in the list of all possible tokens.
+Models have dictionary that maps indexes to the token themselves and vice versa together with special tokens that represent things like start of a prompt.
+
+Note that, this means that in the **training data** we use the special tokens with the assigned meaning, it does not mean that the neural network treats them differently; it will just learn what they mean but the constant seeing them. 
+
+Note that the choice of token can be different from model to model.
+
+Now we can have a look at tokens if we create a **tokenizer** and we run the `decode/encode` functions 
+```
+# Accessing Llama 3.1 from Meta
+# In order to use Llama 3.1, Meta does require you to sign their terms of service.
+# Visit their model instructions page in Hugging Face: https://huggingface.co/meta-llama/Meta-Llama-3.1-8B
+# Once you've been approved for any 3.1 model, it applies to the whole 3.1 family of models. 
+tokenizer = AutoTokenizer.from_pretrained('meta-llama/Meta-Llama-3.1-8B', trust_remote_code=True)
+
+text = "I am excited to show Tokenizers in action to my LLM engineers"
+tokens = tokenizer.encode(text)
+tokens
+[128000,
+ 40,
+ 1097,
+ 12304,
+ 311,
+ 1501,
+ 9857,
+ ...
+]
+
+tokenizer.decode([128000])
+<|begin_of_text|>
+
+tokenizer.decode([40])
+I
+
+tokenizer.decode([tokens])
+<|begin_of_text|>I am excited to show Tokenizers in action to my LLM engineers
+
+
+tokenizer.batch_decode(tokens)
+ ['<|begin_of_text|>',
+ 'I',
+ ' am',
+ ' excited',
+ ' to',
+ ' show',
+ ...
+ ] 
+```
+
+You can see all the special tokens in your vocab:
+```
+print(len(tokenizer.vocab))
+print("-------")
+---
+128256
+--------
+tokenizer.get_added_vocab()
+-------
+{'<|begin_of_text|>': 128000,
+ '<|end_of_text|>': 128001,
+ '<|reserved_special_token_0|>': 128002,
+ '<|reserved_special_token_1|>': 128003,
+.... 
+```
+
+**Instruct variants of models**
+
+Many models have a variant that has been trained for use in Chats. This means that they have been trained to get input
+which is formatted in the format we have actually been using so far:
+
+**i.e to expect prompts with a particular format that includes system, user and assistant prompts.**
+
+```
+messages = [
+    {"role": "system", "content": "You are a helpful assistant"},
+    {"role": "user", "content": "Tell a light-hearted joke for a room of Data Scientists"}
+  ]
+```
+
+This means that so far we didn't really send a python dictionary.. we just sent text formatted in a specific way!!
+
+These models are typically labelled with the word "**Instruct**" at the end.<p>
+
+Hugging face has a utility method `apply_chat_template` that used together with these types of mdoels, will: **convert from the messages list format we are familiar with, into the right input prompt for this model**
+
+```
+okenizer = AutoTokenizer.from_pretrained('meta-llama/Meta-Llama-3.1-8B-Instruct', trust_remote_code=True)
+messages = [
+    {"role": "system", "content": "You are a helpful assistant"},
+    {"role": "user", "content": "Tell a light-hearted joke for a room of Data Scientists"}
+  ]
+
+prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+print(prompt)
+
+----- you get:
+<|begin_of_text|><|start_header_id|>system<|end_header_id|>
+
+Cutting Knowledge Date: December 2023
+Today Date: 26 Jul 2024
+
+You are a helpful assistant<|eot_id|><|start_header_id|>user<|end_header_id|>
+
+Tell a light-hearted joke for a room of Data Scientists<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+```
+
+The LLM will take the sequence of numbers that is the encoded tokens and generate the most likely sequence for the output
+that is then returned encoded in tokens.
+
+### Other tokenizers
+
+Just some other tokenizers (differen vocabs etc..)
+
+ - PHI4 = "microsoft/Phi-4-mini-instruct"
+ - DEEPSEEK = "deepseek-ai/DeepSeek-V3.1"
+ - QWEN_CODER = "Qwen/Qwen2.5-Coder-7B-Instruct"
+
+
+### Quantization
+
+Quantization is the process of tuning the level of precision you want to use for the parameters of the NeuroNetworks. <p>
+Let's say each parameter can be definied as a number with a definition from 16bits up to 64bits. the number of bits you
+use to store the paramter ties to the model precisions and to the amount of space the model takes.
+
+this means you can make a model smaller just by reducing the precision of the paramters. 
+The number of parameters does not change! Is this the same as reducing the number of the parameters but keeping them at a higher precision?
+
+Turns out it's not the same.. dialliing down the precision of the parameter but keeping the number of parameters high has proven to be much better than keeping the precision of the parameters high and reducing the number of them..
+
+I guess that kinda makes sense..
+
+
+
+# List/Links to Colab notebooks
+
  - [Day1 (personal) colab notebook](https://colab.research.google.com/drive/1cIeoaUlVBgo_QQCS_Z2sni7ceHa2JwYP#scrollTo=5iiiD5GFvwXA)
  - [Day2 (personal) colab notebook][https://colab.research.google.com/drive/1m23CbF5wVXMhL4W6eiMlmmbXAhAw2Mck#scrollTo=jhLouIeW5kXw]
+ - [Day 3-5 (personal) colab notebook](https://colab.research.google.com/drive/1D_e6R5fCWMxleKSPqFukpmufUHGa90gr#scrollTo=Ne-sCWwZL22B)
